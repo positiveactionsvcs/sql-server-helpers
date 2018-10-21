@@ -1,0 +1,1 @@
+exec sp_dbcmptlevel @dbname=DBNAME, @new_cmptlevel= 90
