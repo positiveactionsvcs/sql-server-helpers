@@ -1,6 +1,7 @@
+-- List composite indexes.
 SELECT 
     t.name AS TableName,
-    STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ' have to be unique' AS IndexColumns
+    STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ' must be unique' AS IndexColumns
 FROM 
     sys.indexes i
 INNER JOIN 

@@ -1,18 +1,20 @@
-CREATE TABLE #tt1 (c1 VARCHAR(100))
+DECLARE @sql nvarchar(MAX) = '';
 
-INSERT INTO #tt1
-SELECT 'CREATE TABLE AllDataTypes ('
+SELECT @sql += 'CREATE TABLE AllDataTypes (' + CHAR(13) + CHAR(10);
 
-INSERT INTO #tt1
-SELECT '[' + name + 'Null] [' + name + '] NULL,'
-FROM sys.types WHERE is_nullable = 1
-UNION
-SELECT '[' + name + 'NotNull] [' + name + '] NOT NULL,'
-FROM sys.types WHERE name <> 'xml'
+SELECT @sql +=
+    '[' + name + 'Null] [' + name + '] NULL,' + CHAR(13) + CHAR(10)
+FROM sys.types
+WHERE is_user_defined = 0
+AND is_nullable = 1
 
-INSERT INTO #tt1
-SELECT '[xmlNotNull] [xml] NOT NULL)'
+SELECT @sql +=
+    '[' + name + 'NotNull] [' + name + '] NOT NULL,' + CHAR(13) + CHAR(10)
+FROM sys.types
+WHERE is_user_defined = 0
+AND name <> 'xml';
 
-SELECT c1 FROM #tt1
+SELECT @sql +=
+    '[xmlNotNull] [xml] NOT NULL)';
 
-DROP TABLE #tt1
+SELECT @sql AS CreateStatement;
