@@ -1,13 +1,13 @@
 -- Get all users for a role.
-SELECT u.Id, u.UserName, u.Email
-FROM AspNetUsers u
-JOIN AspNetUserRoles ur ON u.Id = ur.UserId
-JOIN AspNetRoles r ON ur.RoleId = r.Id
-WHERE r.Name = 'RoleName';
+SELECT u.UserId, u.UserName
+FROM aspnet_Users u
+JOIN aspnet_UsersInRoles ur ON u.UserId = ur.UserId
+JOIN aspnet_Roles r ON ur.RoleId = r.RoleId
+WHERE r.RoleName = '<role_name>'
 
 -- Get all roles for a user.
-SELECT r.Id, r.Name
-FROM AspNetRoles r
-JOIN AspNetUserRoles ur ON r.Id = ur.RoleId
-JOIN AspNetUsers u ON ur.UserId = u.Id
-WHERE u.UserName = 'UserName';
+SELECT r.RoleId, r.RoleName
+FROM aspnet_Roles r
+JOIN aspnet_UsersInRoles ur ON r.RoleId = ur.RoleId
+JOIN aspnet_Users u ON ur.UserId = u.UserId
+WHERE u.UserName = '<user_name>'

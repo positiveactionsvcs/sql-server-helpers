@@ -1,11 +1,17 @@
-SET IDENTITY_INSERT dbo.sysdiagrams ON
-GO
+-- Transfer the Database Diagrams from one database to another.
+DECLARE @SourceDatabase sysname = '<source_database>'
+DECLARE @TargetDatabase sysname = '<target_database>'
 
-INSERT INTO dbo.sysdiagrams 
-	([name], [principal_id], [diagram_id], [version], [definition])
-	SELECT [name], [principal_id], [diagram_id], [version], [definition] 
-	FROM <DATABASENAME>.dbo.sysdiagrams
-GO
-	
-SET IDENTITY_INSERT dbo.sysdiagrams OFF
-GO
+DECLARE @SQL nvarchar(MAX)
+
+SET @SQL = N'SET IDENTITY_INSERT ' + QUOTENAME(@TargetDatabase) + N'.dbo.sysdiagrams ON
+
+INSERT INTO ' + QUOTENAME(@TargetDatabase) + N'.dbo.sysdiagrams
+    ([name], [principal_id], [diagram_id], [version], [definition])
+SELECT
+    [name], [principal_id], [diagram_id], [version], [definition]
+FROM ' + QUOTENAME(@SourceDatabase) + N'.dbo.sysdiagrams
+
+SET IDENTITY_INSERT ' + QUOTENAME(@TargetDatabase) + N'.dbo.sysdiagrams OFF'
+
+EXEC sp_executesql @SQL

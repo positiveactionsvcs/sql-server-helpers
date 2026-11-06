@@ -1,63 +1,37 @@
-CREATE TABLE #Table(table_name varchar(500), index_name varchar(500), index_description varchar(500), index_keys varchar(500), index_size bigint)
+/*
+    Shows all indexes and their sizes.
+    Ordered by largest index size.
 
-DECLARE GetTables CURSOR READ_ONLY
-FOR
-SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_TYPE = 'BASE TABLE'
-AND OBJECTPROPERTY (OBJECT_ID(TABLE_NAME), 'IsMSShipped') = 0
+    Rows      = Number of rows in the index.
+    SizeMB    = Space used by the index.
+    IndexType = Clustered, Nonclustered, XML, etc.
+*/
+SELECT
+    s.[name] + '.' + t.[name] AS TableName,     -- Fully qualified table name
+    i.[name] AS IndexName,                      -- Index name
+    i.[type_desc] AS IndexType,                 -- CLUSTERED, NONCLUSTERED
+    SUM(p.[rows]) AS [Rows],                    -- How many rows are represented in the index
 
-DECLARE @TableName sysname
-OPEN GetTables
-
-FETCH NEXT FROM GetTables INTO @TableName
-WHILE (@@fetch_status = 0)
-BEGIN
-
-INSERT INTO #Table(index_name, index_description, index_keys) EXEC sp_helpindex @TableName
-UPDATE #Table SET table_name = @TableName WHERE table_name IS NULL
-
-FETCH NEXT FROM GetTables INTO @TableName
-END
-
-CLOSE GetTables
-DEALLOCATE GetTables
-
-DECLARE @index_name varchar(200)
-DECLARE @table_name varchar(200)
-DECLARE @dpages bigint
-
-DECLARE IndexDetail CURSOR FOR
-	SELECT
-		index_name
-	FROM
-		#Table
-
-OPEN IndexDetail
-
-FETCH NEXT FROM IndexDetail INTO @index_name
-
-WHILE (@@fetch_status = 0)
-BEGIN
-
-SELECT @dpages = dpages FROM sysindexes WHERE name = @Index_Name
-PRINT @Index_Name
-PRINT CONVERT( varchar(200), @dpages)
-
-UPDATE
-	#Table
-SET
-	index_size = (@dpages*8192/(1024*1024))
+    -- Index size in MB (8 KB pages converted to MB)
+    CAST(SUM(a.used_pages) * 8.0 / 1024 AS decimal(18,2)) AS SizeMB
+FROM
+    sys.tables t
+    JOIN
+        sys.schemas s ON t.[schema_id] = s.[schema_id]
+    JOIN
+        sys.indexes i ON t.[object_id] = i.[object_id]
+    JOIN
+        sys.partitions p ON i.[object_id] = p.[object_id]
+        AND i.index_id = p.index_id
+    JOIN
+        sys.allocation_units a ON p.[partition_id] = a.[container_id]
 WHERE
-	index_name = @Index_Name
-
-FETCH NEXT FROM IndexDetail INTO @index_name
-END
-
-CLOSE IndexDetail
-DEALLOCATE IndexDetail
-
-SELECT * FROM #Table ORDER BY index_size DESC
-
-DROP TABLE #Table
-GO
+    i.[index_id] > 0      -- Exclude heaps
+    AND i.[name] IS NOT NULL  -- Exclude unnamed indexes
+GROUP BY
+    s.[name],
+    t.[name],
+    i.[name],
+    i.[type_desc]
+ORDER BY
+    SizeMB DESC

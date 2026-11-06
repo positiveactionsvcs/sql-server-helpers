@@ -1,10 +1,13 @@
-CREATE TABLE #Results (name varchar(100), [size in kb] bigint, comments varchar(100))
-
-INSERT INTO #Results EXEC sp_databases 
-
-SELECT 
-	name,
-	CONVERT(decimal(18,2), CONVERT(decimal(18,2), [size in kb]/CONVERT(decimal(18, 2),1024))) AS SizeInMB
- FROM #Results
-
-DROP TABLE #Results
+-- List the size of all databases in MB.
+SELECT
+    d.[name] AS DatabaseName,
+    CONVERT(decimal(18,2), SUM(mf.size) * 8.0 / 1024) AS SizeInMB
+FROM
+    sys.databases d
+    INNER JOIN
+        sys.master_files mf
+        ON d.database_id = mf.database_id
+GROUP BY
+    d.[name]
+ORDER BY
+    d.[name]

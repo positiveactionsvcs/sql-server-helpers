@@ -1,14 +1,12 @@
 SET NOCOUNT ON;
 
-DECLARE
-    @SchemaName sysname,
-    @TableName  sysname,
-    @IndexName  sysname,
-    @FragPct    decimal(10,2),
-    @SQL        nvarchar(max);
+DECLARE @SchemaName sysname,
+        @TableName sysname,
+        @IndexName sysname,
+        @FragPct decimal(10,2),
+        @SQL nvarchar(max);
 
-IF OBJECT_ID('tempdb..#Indexes') IS NOT NULL
-    DROP TABLE #Indexes;
+IF OBJECT_ID('tempdb..#Indexes') IS NOT NULL DROP TABLE #Indexes;
 
 SELECT
     s.name AS SchemaName,

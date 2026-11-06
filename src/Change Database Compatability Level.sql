@@ -1,5 +1,5 @@
 -- List (and change) database compatability version.
-DECLARE @DatabaseName VARCHAR(100) = 'PMA2'
+DECLARE @DatabaseName VARCHAR(100) = '<database_name>'
 
 SELECT
 	[name],
@@ -20,5 +20,5 @@ WHERE
 -- 140	 | SQL Server 2017
 -- 150	 | SQL Server 2019
 -- 160	 | SQL Server 2022
---ALTER DATABASE PMA2
+--ALTER DATABASE <database_name>
 --SET COMPATIBILITY_LEVEL = 140;

@@ -1,3 +1,4 @@
+-- Example of using Transactions.
 BEGIN TRY
     BEGIN TRAN
 
